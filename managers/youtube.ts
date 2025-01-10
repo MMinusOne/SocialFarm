@@ -1,10 +1,14 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 import { google } from "googleapis";
 import { ReadStream } from "fs";
 
-const CLIENT_ID = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
-const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const ACCESS_TOKEN = process.env.GOOGLE_ACCESS_TOKEN;
+const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
 
 console.log({ CLIENT_ID, CLIENT_SECRET, ACCESS_TOKEN, REFRESH_TOKEN });
 

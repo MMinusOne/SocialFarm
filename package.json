@@ -13,8 +13,10 @@
   "dependencies": {
     "@remotion/bundler": "^4.0.246",
     "@remotion/renderer": "^4.0.246",
+    "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "googleapis": "^144.0.0",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "snoowrap": "^1.23.0"
   }
 }
