@@ -9,7 +9,7 @@
     "start": "node index.ts",
     "auth": "node oauth.ts"
   },
-  "engines": {"node": "22"},
+  "engines": {"node": "23"},
   "keywords": [],
   "author": "",
   "license": "ISC",
