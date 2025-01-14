@@ -5,7 +5,7 @@ FROM node:23.6.0-alpine AS base
 # Install dependencies only when needed
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
-WORKDIR /app
+WORKDIR /  
 
 # Install dependencies using pnpm
 COPY package.json pnpm-lock.yaml ./
@@ -13,7 +13,7 @@ RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 # Production image
 FROM base AS runner
-WORKDIR /app
+WORKDIR /  
 
 ENV NODE_ENV=production
 
