@@ -1,18 +1,51 @@
-import { useState } from "react";
-import { getInputProps } from "remotion";
+import { useEffect, useState } from "react";
+import { getInputProps, random } from "remotion";
 
 export default function EmojiList() {
   const {
     baseEmoji = "x",
     oddEmoji = "y",
-  }: { baseEmoji: string; oddEmoji: string } = getInputProps();
-  const [emojiRows, setEmojiRows] = useState(
-    Array(10).fill(Array(10).fill(baseEmoji))
-  );
+    seed = 2025,
+  }: {
+    baseEmoji: string;
+    oddEmoji: string;
+    seed: number;
+  } = getInputProps();
+
+  const ROWS = 10;
+  const ROW_SIZE = 10;
+
+  const [emojiRows, setEmojiRows] = useState<string[][]>([]);
+
+  const initRows = () => {
+    const rows = [];
+    const randomIndex = Math.floor(random(seed) * (ROWS * ROW_SIZE));
+    let currentEmojiIndex = 0;
+
+    for (let i = 0; i < ROWS; i++) {
+      const row = [];
+      for (let j = 0; j < ROW_SIZE; j++) {
+        if (currentEmojiIndex === randomIndex) {
+          row.push(oddEmoji);
+        } else {
+          row.push(baseEmoji);
+        }
+        currentEmojiIndex += 1;
+      }
+      rows.push(row);
+    }
+    setEmojiRows(rows);
+  };
+
+  useEffect(() => {
+    initRows();
+  }, []);
+
+  console.log(oddEmoji, baseEmoji, 33123,3,24214124124,414125465775674,342342343)
 
   return (
     <>
-      <div className="flex flex-col w-full h-[55%]">
+      <div className="flex flex-col bg-slate-100 p-4 w-full h-[55%]">
         <div
           style={{ height: 200 }}
           className="flex justify-center items-center w-full"
@@ -28,7 +61,7 @@ export default function EmojiList() {
           </span>
         </div>
 
-        <div className="flex bg-blue-500 p-10 w-full h-full">
+        <div className="flex w-full h-full">
           <div className="flex flex-col w-20 h-full">
             {emojiRows.map((_, rowIndex) => {
               return (
@@ -44,9 +77,8 @@ export default function EmojiList() {
 
           <div className="flex flex-col w-full h-full">
             {emojiRows.map((row) => {
-              console.log(row);
               return (
-                <div className="flex bg-yellow-500 w-full h-[10%]">
+                <div className="flex w-full h-[10%]">
                   {row.map((emoji: string, emojiIndex: number) => {
                     return (
                       <span className="place-items-center grid w-[10%] h-full text-5xl text-center">

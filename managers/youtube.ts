@@ -10,8 +10,6 @@ const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const ACCESS_TOKEN = process.env.GOOGLE_ACCESS_TOKEN;
 const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
 
-console.log({ CLIENT_ID, CLIENT_SECRET, ACCESS_TOKEN, REFRESH_TOKEN });
-
 const oauthClient = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET);
 
 oauthClient.setCredentials({
@@ -57,4 +55,5 @@ export default async function upload(options: UploadOptions) {
 interface UploadOptions {
   title: string;
   videoFile: ReadStream;
+  videoId: string;
 }

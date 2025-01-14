@@ -12,9 +12,9 @@ const reddit = new Snoowrap({
   password: process.env.REDDIT_PASSWORD,
 });
 
-const subreddits = ["snoowrap"];
+const subreddits = ["goodanimememes"];
 
-export default async function getRedditMeme() {
+export default async function getRedditMeme(): Promise<Submission> {
   const subredditName = subreddits.at(
     Math.floor(Math.random() * subreddits.length)
   );
@@ -22,33 +22,17 @@ export default async function getRedditMeme() {
   if (!subredditName) {
     throw new Error("Subreddit name is undefined");
   }
-  
-  const subreddit = reddit.getSubreddit(subredditName);
 
-  const submission = await querySubmission(
-    subreddit,
-    (submission: Submission) => {
-      return !submission.over_18;
-    }
-  );
+  const validSchemes = [".png", ".jpg", ".jpeg"];
 
-  console.log(submission);
-  return submission
-}
-
-const querySubmission = (
-  subreddit: Snoowrap.Subreddit,
-  query: (submission: Submission) => boolean
-) => {
-
-  return new Promise(async (resolve, reject) => {
-    
-    for (let i = 0; i < 1; ) {
-      const submission = await subreddit.getRandomSubmission();
-      if (query(submission)) {
-        i++;
-        resolve(submission);
-      }
-    }
+  const hotSubmissions = await reddit.getHot(subredditName, { limit: 20 });
+  const submissions = hotSubmissions.filter((submission) => {
+    return validSchemes.some((scheme) => submission.url.endsWith(scheme));
   });
-};
+  const randomIndex = Math.floor(Math.random() * submissions.length);
+  const randomSubmission = submissions[randomIndex];
+
+  //https://i.redd.it/ctvkudgpvfbe1.jpeg
+
+  return randomSubmission;
+}

@@ -5,7 +5,7 @@ import Meme from "./Meme";
 function FindEmoji() {
   return (
     <>
-      <div className="flex flex-col w-full h-full">
+      <div className="flex flex-col bg-slate-100 w-full h-full">
         <EmojiList />
         <Meme />
       </div>

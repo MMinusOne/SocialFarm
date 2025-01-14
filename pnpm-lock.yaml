@@ -14,9 +14,15 @@ importers:
       '@remotion/renderer':
         specifier: ^4.0.246
         version: 4.0.246(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@types/node-cron':
+        specifier: ^3.0.11
+        version: 3.0.11
       axios:
         specifier: ^1.7.9
         version: 1.7.9
+      cron-schedule:
+        specifier: ^5.0.4
+        version: 5.0.4
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -280,6 +286,9 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/node-cron@3.0.11':
+    resolution: {integrity: sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==}
+
   '@types/node@22.10.5':
     resolution: {integrity: sha512-F8Q+SeGimwOo86fiovQh8qiXfFEh2/ocYv7tU5pJ3EXMSSxk1Joj5wefpFK2fHTf/N6HKGSxIDBT9f3gCxXPkQ==}
 
@@ -448,6 +457,10 @@ packages:
 
   core-util-is@1.0.2:
     resolution: {integrity: sha512-3lqz5YjWTYnW6dlDa5TLaTCcShfar1e40rmcJVwCBJC6mWlFuj0eCHIElmG1g5kyuJ/GD+8Wn4FFCcz4gJPfaQ==}
+
+  cron-schedule@5.0.4:
+    resolution: {integrity: sha512-nH0a49E/kSVk6BeFgKZy4uUsy6D2A16p120h5bYD9ILBhQu7o2sJFH+WI4R731TSBQ0dB1Ik7inB/dRAB4C8QQ==}
+    engines: {node: '>=18'}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -1443,6 +1456,8 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/node-cron@3.0.11': {}
+
   '@types/node@22.10.5':
     dependencies:
       undici-types: 6.20.0
@@ -1633,6 +1648,8 @@ snapshots:
   commander@2.20.3: {}
 
   core-util-is@1.0.2: {}
+
+  cron-schedule@5.0.4: {}
 
   cross-spawn@7.0.6:
     dependencies:
