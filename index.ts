@@ -5,8 +5,13 @@ import renderVideo from "./managers/videoRenderer.ts";
 import youtubeUpload from './managers/youtube.ts';
 import path from 'path';
 import fs from 'fs';
+import express from 'express';
 
 dotenv.config();
+
+const app = express();
+
+app.listen(2000)
 
 function convertAMPMToCron(time: string) { 
   const [timePart, ampm] = time.split(/(AM|PM)/);
