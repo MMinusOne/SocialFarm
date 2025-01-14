@@ -2,22 +2,27 @@ import { renderMedia, selectComposition } from "@remotion/renderer";
 import { bundle } from "@remotion/bundler";
 import path from "node:path";
 import getRedditMeme from "./redditMeme.ts";
+import { enableTailwind } from '@remotion/tailwind';
+import emojis from '../emojis.json' with { type: "json" }
 
-const entry = path.join(process.cwd(), "video-prod", "src", "index.ts");
 const compositionId = "FindEmoji";
 
 const bundleLocation = await bundle({
-  entryPoint: entry,
-  webpackOverride: (config) => config,
+  entryPoint: path.resolve('./video-prod/src/index.ts'),
+  webpackOverride: (config) => enableTailwind(config),
 });
 
 export default async function renderVideo(): Promise<{ videoId: string }> {
   const meme = await getRedditMeme();
   const videoId = crypto.randomUUID();
 
+  const randomGroup = emojis[Math.floor(Math.random() * emojis.length)];
+
+  const [baseEmoji, oddEmoji] = randomGroup.sort(() => 0.5 - Math.random()).slice(0, 2);
+
   const inputProps = {
-    baseEmoji: "x",
-    oddEmoji: "y",
+    baseEmoji,
+    oddEmoji,
     seed: Math.random(),
     memeUrl: meme.url,
   };
@@ -32,6 +37,8 @@ export default async function renderVideo(): Promise<{ videoId: string }> {
     composition,
     serveUrl: bundleLocation,
     codec: "h264",
+    concurrency: 2,
+    hardwareAcceleration: "if-possible",
     logLevel: "verbose",
     outputLocation: path.join(process.cwd(), `./videos/${videoId}.mp4`),
     onProgress: ({ progress }) => {
