@@ -5,7 +5,9 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "cd video-prod && pnpm run dev",
+    "start": "node index.ts",
+    "auth": "node oauth.ts"
   },
   "keywords": [],
   "author": "",
