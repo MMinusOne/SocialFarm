@@ -9,6 +9,7 @@
     "start": "node index.ts",
     "auth": "node oauth.ts"
   },
+  "engines": {"node": "23"},
   "keywords": [],
   "author": "",
   "license": "ISC",
