@@ -7,8 +7,8 @@ WORKDIR /app
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Copy package.json and pnpm-lock.yaml (if available)
-COPY package*.json pnpm-lock.yaml* ./
+# Copy package files first
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
 RUN pnpm install
@@ -16,8 +16,11 @@ RUN pnpm install
 # Copy the rest of the application code
 COPY . .
 
+# Make sure we're in production mode
+ENV NODE_ENV=production
+
 # Expose port 3000
 EXPOSE 3000
 
-# Start the application
-CMD ["pnpm", "run", "start"]
+# Use a more explicit start command
+CMD ["sh", "-c", "pnpm run start"]
