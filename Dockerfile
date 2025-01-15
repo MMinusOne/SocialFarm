@@ -2,14 +2,18 @@ FROM node:23.6.0-alpine
 
 WORKDIR /app
 
-# Install pnpm globally
-RUN npm install -g pnpm
+# Install pnpm and typescript globally
+RUN npm install -g pnpm typescript
 
 COPY package.json pnpm-lock.yaml ./
 
-RUN pnpm install
+# Remove the problematic install script from package.json
+RUN sed -i '/"install": "pnpm install",/d' package.json
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-# Just run the script once and exit
-CMD ["pnpm", "run", "start"]
+# Run the compiled JavaScript file
+CMD ["node", "index.ts"]
