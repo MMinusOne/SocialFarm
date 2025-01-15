@@ -1,32 +1,23 @@
-# syntax=docker.io/docker/dockerfile:1
+# Use Node.js 23.6.0 as the base image
+FROM node:23.6.0-alpine
 
-FROM node:23.6.0-alpine AS base
+# Set working directory
+WORKDIR /app
 
-# Install dependencies only when needed
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
-WORKDIR /  
+# Install pnpm globally
+RUN npm install -g pnpm
 
-# Install all dependencies using pnpm
-COPY package.json pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm install
+# Copy package.json and pnpm-lock.yaml (if available)
+COPY package*.json pnpm-lock.yaml* ./
 
-# Production image
-FROM base AS runner
-WORKDIR /  
+# Install dependencies
+RUN pnpm install
 
-ENV NODE_ENV=production
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 backenduser
-
+# Copy the rest of the application code
 COPY . .
 
-USER backenduser
-
+# Expose port 3000
 EXPOSE 3000
 
-ENV PORT=3000
-
-ENV HOSTNAME="0.0.0.0"
-CMD ["npx", "pnpm", "run", "install"] && ["npx", "pnpm", "run", "start"]
+# Start the application
+CMD ["pnpm", "run", "start"]
