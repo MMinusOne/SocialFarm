@@ -29,4 +29,4 @@ EXPOSE 3000
 ENV PORT=3000
 
 ENV HOSTNAME="0.0.0.0"
-CMD ["npx", "pnpm", "run", "start"]
+CMD ["npx", "pnpm", "run", "install"] && ["npx", "pnpm", "run", "start"]
