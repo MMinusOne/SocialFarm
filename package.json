@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "cd video-prod && pnpm run dev",
-    "start": "node index.ts",
+    "start": "pnpm install && node index.ts",
     "auth": "node oauth.ts"
   },
   "engines": {"node": "23"},
