@@ -8,6 +8,11 @@ import fs from 'fs';
 
 dotenv.config();
 
+const videosFolderPath = path.join(process.cwd(), "videos");
+if (!fs.existsSync(videosFolderPath)) {
+  fs.mkdirSync(videosFolderPath);
+}
+
 function convertAMPMToCron(time: string) { 
   const [timePart, ampm] = time.split(/(AM|PM)/);
   const [hour, minutes] = timePart.split(':').map(Number);
@@ -26,7 +31,7 @@ config.schedules.forEach((time) => {
     if(!title) return;
     await youtubeUpload({ 
       title,
-      videoFile: fs.createReadStream(path.join(process.cwd(), "videos", `./${videoId}.mp4`)),
+      videoFile: fs.createReadStream(path.join(videosFolderPath, `./${videoId}.mp4`)),
       videoId, 
     });
 
