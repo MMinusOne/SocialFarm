@@ -6,49 +6,52 @@ dotenv.config();
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const ACCESS_TOKEN = process.env.GOOGLE_ACCESS_TOKEN;
 const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
+const ACCESS_TOKEN = process.env.GOOGLE_ACCESS_TOKEN; // Assuming access token is in the env
 
-const oauthClient = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
-);
+// Define the required scopes for YouTube API
+const SCOPES = ["https://www.googleapis.com/auth/youtube.upload"];
+
+const oauthClient = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET);
 
 oauthClient.setCredentials({
-  access_token: ACCESS_TOKEN,
   refresh_token: REFRESH_TOKEN,
+  access_token: ACCESS_TOKEN, // Set the initial access token
 });
 
-async function ensureAccessToken() {
+// Refresh the access token every 2000 seconds
+setInterval(async () => {
   try {
     const { credentials } = await oauthClient.refreshAccessToken();
-    
+    console.log({ credentials });
     if (!credentials.access_token) {
-      throw new Error('No access token returned');
+      throw new Error("No access token returned");
     }
 
     oauthClient.setCredentials({
       access_token: credentials.access_token,
       refresh_token: REFRESH_TOKEN,
     });
-
-    return credentials.access_token;
+    console.log("Access token refreshed");
   } catch (error) {
-    console.error('Token refresh error:', error);
+    console.error("Token refresh error:", error);
     if (error.response) {
-      console.error('Response error data:', error.response.data);
+      console.error("Response error data:", error.response.data);
     }
-    throw new Error('Failed to refresh access token');
   }
-}
+}, 2000 * 1000); // 2000 seconds in milliseconds
 
-// Verify the credentials before using them
 async function verifyCredentials() {
   try {
-    const tokenInfo = await oauthClient.getTokenInfo(ACCESS_TOKEN);
+    const accessToken = oauthClient.credentials.access_token;
+    if (!accessToken) {
+      throw new Error("Access token is undefined");
+    }
+    console.log(accessToken);
+    const tokenInfo = await oauthClient.getTokenInfo(accessToken);
     return true;
   } catch (error) {
-    console.error('Token verification failed:', error);
+    console.error("Token verification failed:", error);
     return false;
   }
 }
@@ -79,19 +82,23 @@ const tags = [
   "ShortsChallenge",
 ];
 
-
 export default async function upload(options: UploadOptions) {
   try {
-    // Verify credentials first
     const isValid = await verifyCredentials();
     if (!isValid) {
-      throw new Error('Invalid credentials');
+      console.log("Access token is invalid, refreshing...");
+      const { credentials } = await oauthClient.refreshAccessToken();
+      console.log({ credentials });
+      if (!credentials.access_token) {
+        throw new Error("No access token returned");
+      }
+
+      oauthClient.setCredentials({
+        access_token: credentials.access_token,
+        refresh_token: REFRESH_TOKEN,
+      });
+      console.log("Ensured access token");
     }
-
-    // Ensure we have a fresh access token
-    await ensureAccessToken();
-
-    console.log('Ensured access token');
 
     const request = {
       part: ["snippet", "status"],
@@ -109,9 +116,9 @@ export default async function upload(options: UploadOptions) {
         body: options.videoFile,
       },
     };
-  
+
     const response = await youtube.videos.insert(request);
-    console.log(`Google API Upload accepted`)
+    console.log(`Google API Upload accepted`);
     return response;
   } catch (error) {
     console.error("Upload error:", error);
