@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
 import cron from "node-cron";
-import config from "./config.json" with { type: "json" };
+// import config from "./config.json" with { type: "json" };
 import renderVideo from "./managers/videoRenderer.ts";
-import youtubeUpload from './managers/youtube.ts';
-import path from 'path';
-import fs from 'fs';
+import youtubeUpload from "./managers/youtube.ts";
+import path from "path";
+import fs from "fs";
 
 dotenv.config();
 
@@ -13,32 +13,41 @@ if (!fs.existsSync(videosFolderPath)) {
   fs.mkdirSync(videosFolderPath);
 }
 
-function convertAMPMToCron(time: string) { 
-  const [timePart, ampm] = time.split(/(AM|PM)/);
-  const [hour, minutes] = timePart.split(':').map(Number);
+const config: {
+  schedules: string[];
+  titles: string[];
+} = {
+  schedules: [],
+  titles: ["test"],
+};
 
-  const adjustedHour = ampm === 'PM' && hour < 12 ? hour + 12 : (ampm === 'AM' && hour === 12 ? 0 : hour);
-  const cronExpression = `${minutes} ${adjustedHour} * * *`;
+const now = new Date();
+now.setMinutes(now.getMinutes() + 1);
+const nextMinuteCron = `${now.getMinutes()} ${now.getHours()} * * *`;
+config.schedules.push(nextMinuteCron);
 
-  return cronExpression;
-}
-
-config.schedules.forEach((time) => {
-  const cronTime = convertAMPMToCron(time);
-  cron.schedule(cronTime, async() => {
+config.schedules.forEach((cronTime) => {
+  cron.schedule(cronTime, async () => {
+    console.log("RENDERING VIDEO");
     const { videoId } = await renderVideo();
-    const title = config.titles.at(Math.floor(Math.random() * config.titles.length));
-    if(!title) return;
-    await youtubeUpload({ 
+    console.log(`RENDERED ${videoId}`);
+    const title = config.titles.at(
+      Math.floor(Math.random() * config.titles.length)
+    );
+    if (!title) return;
+    console.log(`Uploading ${videoId}`);
+    await youtubeUpload({
       title,
-      videoFile: fs.createReadStream(path.join(videosFolderPath, `./${videoId}.mp4`)),
-      videoId, 
+      videoFile: fs.createReadStream(
+        path.join(videosFolderPath, `./${videoId}.mp4`)
+      ),
+      videoId,
     });
 
     console.log(`
        UPLOADED VIDEO: 
        id: ${videoId}
-       time: ${time}
-      `)
+       time: ${cronTime}
+      `);
   });
 });
