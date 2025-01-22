@@ -1,4 +1,4 @@
-FROM node:23.6.0-alpine
+FROM node:23.6.0
 
 WORKDIR /app
 
@@ -16,4 +16,4 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Run the compiled JavaScript file
-CMD ["node", "index.ts"]
+CMD ["node", "index.js"]

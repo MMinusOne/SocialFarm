@@ -41,8 +41,6 @@ export default function EmojiList() {
     initRows();
   }, []);
 
-  console.log(oddEmoji, baseEmoji, 33123,3,24214124124,414125465775674,342342343)
-
   return (
     <>
       <div className="flex flex-col bg-slate-100 p-4 w-full h-[55%]">
