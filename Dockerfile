@@ -1,15 +1,14 @@
 FROM node:23.6.0
 
-# Install pnpm and typescript globally
-RUN npm install -g pnpm typescript
+RUN npm install -g npm typescript
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
 
 # Remove the problematic install script from package.json
-RUN sed -i '/"install": "pnpm install",/d' package.json
+RUN sed -i '/"install": "npm install",/d' package.json
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN npm install --frozen-lockfile
 
 COPY . .
 
