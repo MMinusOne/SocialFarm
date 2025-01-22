@@ -1,7 +1,5 @@
 FROM node:23.6.0
 
-WORKDIR /app
-
 # Install pnpm and typescript globally
 RUN npm install -g pnpm typescript
 
@@ -16,4 +14,4 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Run the compiled JavaScript file
-CMD ["node", "index.js"]
+CMD ["node", "index.ts"]
