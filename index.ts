@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import cron from "node-cron";
-// import config from "./config.json" with { type: "json" };
+import config from "./config.json" with { type: "json" };
 import renderVideo from "./managers/videoRenderer.ts";
 import youtubeUpload from "./managers/youtube.ts";
 import path from "path";
@@ -12,19 +12,6 @@ const videosFolderPath = path.join(process.cwd(), "videos");
 if (!fs.existsSync(videosFolderPath)) {
   fs.mkdirSync(videosFolderPath);
 }
-
-const config: {
-  schedules: string[];
-  titles: string[];
-} = {
-  schedules: [],
-  titles: ["test"],
-};
-
-const now = new Date();
-now.setMinutes(now.getMinutes() + 1);
-const nextMinuteCron = `${now.getMinutes()} ${now.getHours()} * * *`;
-config.schedules.push(nextMinuteCron);
 
 config.schedules.forEach((cronTime) => {
   cron.schedule(cronTime, async () => {
