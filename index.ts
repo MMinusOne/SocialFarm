@@ -34,13 +34,13 @@ config.schedules.forEach((cronTime) => {
     );
     if (!title) return;
     console.log(`Uploading ${videoId}`);
-    await youtubeUpload({
-      title,
-      videoFile: fs.createReadStream(
-        path.join(videosFolderPath, `./${videoId}.mp4`)
-      ),
-      videoId,
-    });
+    // await youtubeUpload({
+    //   title,
+    //   videoFile: fs.createReadStream(
+    //     path.join(videosFolderPath, `./${videoId}.mp4`)
+    //   ),
+    //   videoId,
+    // });
 
     console.log(`
        UPLOADED VIDEO: 

@@ -1,15 +1,15 @@
 {
-    "schedules": ["2:00PM", "6:00AM", "4:00PM", "10:00PM"],
-    "titles": [
-        "Can You Find the Hidden Emoji? 🤔",
-        "Emoji Hunt: Spot the Sneaky One! 🕵️‍♂️",
-        "Guess the Emoji: A Fun Challenge! 🎉",
-        "Hidden Emoji Challenge: How Many Can You Find? 🔍",
-        "Spot the Emoji: A Quick Game! 🏃‍♀️",
-        "Find the Emoji Among the Crowd! 🌟",
-        "Emoji Search: Can You Spot It? 👀",
-        "The Great Emoji Hunt: Join the Fun! 🎊",
-        "Hidden Emoji Adventure: Are You Ready? 🚀",
-        "Can You Spot the Odd Emoji Out? 🤯"
-    ]
+  "schedules": ["2:55PM","6:00AM", "4:00PM", "10:00PM"],
+  "titles": [
+    "Can You Find the Hidden Emoji? 🤔",
+    "Emoji Hunt: Spot the Sneaky One! 🕵️‍♂️",
+    "Guess the Emoji: A Fun Challenge! 🎉",
+    "Hidden Emoji Challenge: How Many Can You Find? 🔍",
+    "Spot the Emoji: A Quick Game! 🏃‍♀️",
+    "Find the Emoji Among the Crowd! 🌟",
+    "Emoji Search: Can You Spot It? 👀",
+    "The Great Emoji Hunt: Join the Fun! 🎊",
+    "Hidden Emoji Adventure: Are You Ready? 🚀",
+    "Can You Spot the Odd Emoji Out? 🤯"
+  ]
 }
