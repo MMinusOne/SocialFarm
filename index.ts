@@ -13,8 +13,19 @@ if (!fs.existsSync(videosFolderPath)) {
   fs.mkdirSync(videosFolderPath);
 }
 
+function convertAMPMToCron(time: string) { 
+  const [timePart, ampm] = time.split(/(AM|PM)/);
+  const [hour, minutes] = timePart.split(':').map(Number);
+
+  const adjustedHour = ampm === 'PM' && hour < 12 ? hour + 12 : (ampm === 'AM' && hour === 12 ? 0 : hour);
+  const cronExpression = `${minutes} ${adjustedHour} * * *`;
+
+  return cronExpression;
+}
+
 config.schedules.forEach((cronTime) => {
-  cron.schedule(cronTime, async () => {
+
+  cron.schedule(convertAMPMToCron(cronTime), async () => {
     console.log("RENDERING VIDEO");
     const { videoId } = await renderVideo();
     console.log(`RENDERED ${videoId}`);
