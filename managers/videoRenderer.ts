@@ -15,7 +15,7 @@ const bundleLocation = await bundle({
 export default async function renderVideo(): Promise<{ videoId: string }> {
   const meme = await getRedditMeme();
   const videoId = crypto.randomUUID();
-
+  console.log(meme)
   const randomGroup = emojis[Math.floor(Math.random() * emojis.length)];
 
   const [baseEmoji, oddEmoji] = randomGroup.sort(() => 0.5 - Math.random()).slice(0, 2);
