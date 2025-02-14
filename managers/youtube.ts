@@ -25,6 +25,8 @@ class YouTubeUploader {
   private readonly TOKEN_PATH = './tokens.json';
   private oauthClient: any;
   private youtube: any;
+  //@ts-ignore
+  private tokenRefreshInterval: NodeJS.Timeout;
 
   constructor() {
     this.CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
@@ -42,6 +44,41 @@ class YouTubeUploader {
     });
 
     this.initializeTokens();
+    this.startTokenRefreshInterval();
+  }
+
+  private startTokenRefreshInterval(): void {
+    // Refresh tokens every 5 minutes
+    this.tokenRefreshInterval = setInterval(async () => {
+      try {
+        console.log('REFRESHED TOKENS')
+        await this.refreshTokens();
+      } catch (error) {
+        console.error("Scheduled token refresh error:", error);
+      }
+    }, 5 * 60 * 1000);
+  }
+
+  private async refreshTokens(): Promise<void> {
+    try {
+      const { credentials } = await this.oauthClient.refreshAccessToken();
+      if (!credentials.access_token) {
+        throw new Error("No access token returned");
+      }
+
+      const tokenData: TokenData = {
+        access_token: credentials.access_token,
+        refresh_token: this.REFRESH_TOKEN,
+        expiry_date: Date.now() + (60 * 60 * 1000) 
+      };
+
+      this.saveTokens(tokenData);
+      this.oauthClient.setCredentials(tokenData);
+      console.log("Tokens refreshed successfully");
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      throw error;
+    }
   }
 
   private initializeTokens(): void {
@@ -52,6 +89,8 @@ class YouTubeUploader {
         access_token: tokens?.access_token,
         expiry_date: tokens?.expiry_date
       });
+      // Force immediate token refresh on initialization
+      this.refreshTokens();
     } catch (error) {
       console.error("Token initialization error:", error);
     }
@@ -67,32 +106,6 @@ class YouTubeUploader {
 
   private saveTokens(tokens: TokenData): void {
     fs.writeFileSync(this.TOKEN_PATH, JSON.stringify(tokens));
-  }
-
-  private async refreshTokenIfNeeded(): Promise<void> {
-    const tokens = this.loadTokens();
-    const fiveMinutes = 5 * 60 * 1000;
-    
-    if (!tokens || Date.now() + fiveMinutes >= tokens.expiry_date) {
-      try {
-        const { credentials } = await this.oauthClient.refreshAccessToken();
-        if (!credentials.access_token) {
-          throw new Error("No access token returned");
-        }
-
-        const tokenData: TokenData = {
-          access_token: credentials.access_token,
-          refresh_token: this.REFRESH_TOKEN,
-          expiry_date: credentials.expiry_date
-        };
-
-        this.saveTokens(tokenData);
-        this.oauthClient.setCredentials(tokenData);
-      } catch (error) {
-        console.error("Token refresh error:", error);
-        throw error;
-      }
-    }
   }
 
   private async verifyCredentials(): Promise<boolean> {
@@ -120,7 +133,8 @@ class YouTubeUploader {
     let retries = 2;
     while (retries > 0) {
       try {
-        await this.refreshTokenIfNeeded();
+        // Force token refresh before each upload attempt
+        await this.refreshTokens();
         
         const isValid = await this.verifyCredentials();
         if (!isValid) {
@@ -162,9 +176,22 @@ class YouTubeUploader {
       }
     }
   }
+
+  // Cleanup method to clear the interval when the uploader is no longer needed
+  public cleanup(): void {
+    if (this.tokenRefreshInterval) {
+      clearInterval(this.tokenRefreshInterval);
+    }
+  }
 }
 
 const uploader = new YouTubeUploader();
+
 export default async function upload(options: UploadOptions) {
   return uploader.upload(options);
+}
+
+// Export cleanup function
+export function cleanup() {
+  uploader.cleanup();
 }
