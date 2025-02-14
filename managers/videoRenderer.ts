@@ -13,6 +13,7 @@ const bundleLocation = await bundle({
 });
 
 export default async function renderVideo(): Promise<{ videoId: string }> {
+  //@ts-ignore
   const meme = await getRedditMeme();
   const videoId = crypto.randomUUID();
   console.log(meme)
@@ -30,6 +31,7 @@ export default async function renderVideo(): Promise<{ videoId: string }> {
   const composition = await selectComposition({
     serveUrl: bundleLocation,
     id: compositionId,
+    logLevel: "verbose",
     inputProps,
   });
 

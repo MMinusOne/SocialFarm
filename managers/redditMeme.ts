@@ -13,7 +13,7 @@ const reddit = new Snoowrap({
 });
 
 const subreddits = ["goodanimememes"];
-
+//@ts-ignore
 export default async function getRedditMeme(): Promise<Submission> {
   const subredditName = subreddits.at(
     Math.floor(Math.random() * subreddits.length)
@@ -33,6 +33,6 @@ export default async function getRedditMeme(): Promise<Submission> {
   const randomSubmission = submissions[randomIndex];
 
   //https://i.redd.it/ctvkudgpvfbe1.jpeg
-
+  //@ts-ignore
   return randomSubmission;
 }
