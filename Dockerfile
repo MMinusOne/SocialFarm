@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim
+FROM node:23.6.0-bookworm
 # Install Chrome dependencies
 RUN apt-get update
 RUN apt install -y \
@@ -19,10 +19,7 @@ RUN apt install -y \
 
 RUN npm install -g npm typescript
 
-COPY package.json package*.json yarn.lock* pnpm-lock.yaml* bun.lockb* bun.lock* tsconfig.json* remotion.config.* ./
-
-# Remove the problematic install script from package.json
-RUN sed -i '/"install": "npm install",/d' package.json
+COPY package.json tsconfig.json package*.json yarn.lock* pnpm-lock.yaml* bun.lockb* bun.lock* tsconfig.json* remotion.config.* ./
 
 # Install dependencies
 RUN npm install --frozen-lockfile

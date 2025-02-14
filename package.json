@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "dev": "cd video-prod && npm run dev",
-    "install": "npm install",
     "start": "node index.ts",
     "auth": "node oauth.ts"
   },
