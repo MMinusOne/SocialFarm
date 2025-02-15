@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { google } from "googleapis";
+import { google, Auth, youtube_v3 } from "googleapis";
 import { ReadStream } from "fs";
 import fs from 'fs';
 
@@ -23,8 +23,8 @@ class YouTubeUploader {
   private readonly REFRESH_TOKEN: string;
   private readonly SCOPES = ["https://www.googleapis.com/auth/youtube.upload"];
   private readonly TOKEN_PATH = './tokens.json';
-  private oauthClient: any;
-  private youtube: any;
+  private oauthClient: Auth.OAuth2Client;
+  private youtube: youtube_v3.Youtube;
   //@ts-ignore
   private tokenRefreshInterval: NodeJS.Timeout;
 
@@ -35,7 +35,8 @@ class YouTubeUploader {
 
     this.oauthClient = new google.auth.OAuth2(
       this.CLIENT_ID,
-      this.CLIENT_SECRET
+      this.CLIENT_SECRET,
+      'http://localhost' // Add redirect URI
     );
 
     this.youtube = google.youtube({ 
@@ -61,6 +62,10 @@ class YouTubeUploader {
 
   private async refreshTokens(): Promise<void> {
     try {
+      this.oauthClient.setCredentials({
+        refresh_token: this.REFRESH_TOKEN
+      });
+      
       const { credentials } = await this.oauthClient.refreshAccessToken();
       if (!credentials.access_token) {
         throw new Error("No access token returned");
