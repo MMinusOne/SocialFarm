@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import cron from "node-cron";
 import config from "./config.json" with { type: "json" };
 import renderVideo from "./managers/videoRenderer.ts";
-import youtubeUpload, { checkTokens } from "./managers/youtube.ts";
+import { youtubeUploader } from "./managers/youtube.ts";
 import path from "path";
 import fs from "fs";
 
@@ -31,7 +31,7 @@ function convertAMPMToCron(time: string) {
 config.schedules.forEach((cronTime) => {
   cron.schedule(convertAMPMToCron(cronTime), async () => {
     console.log("RENDERING VIDEO");
-    const tokensValid = await checkTokens();
+    const tokensValid = await youtubeUploader.checkTokens();
     if (!tokensValid) {
       console.error("Invalid tokens, please update your credentials");
       return;
@@ -44,7 +44,7 @@ config.schedules.forEach((cronTime) => {
     if (!title) return;
     console.log(`Uploading ${videoId}`);
     try {
-      await youtubeUpload({
+      await youtubeUploader.upload({
         title,
         videoFile: fs.createReadStream(
           path.join(videosFolderPath, `./${videoId}.mp4`)
