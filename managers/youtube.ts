@@ -1,15 +1,8 @@
 import dotenv from "dotenv";
-import { google, Auth, youtube_v3 } from "googleapis";
+import { google, youtube_v3 } from "googleapis";
 import { ReadStream } from "fs";
-import fs from 'fs';
 
 dotenv.config();
-
-interface TokenData {
-  access_token: string;
-  refresh_token: string;
-  expiry_date: number;
-}
 
 interface UploadOptions {
   title: string;
@@ -18,185 +11,166 @@ interface UploadOptions {
 }
 
 class YouTubeUploader {
-  private readonly CLIENT_ID: string;
-  private readonly CLIENT_SECRET: string;
-  private readonly REFRESH_TOKEN: string;
-  private readonly SCOPES = ["https://www.googleapis.com/auth/youtube.upload"];
-  private readonly TOKEN_PATH = './tokens.json';
-  private oauthClient: Auth.OAuth2Client;
-  private youtube: youtube_v3.Youtube;
-  //@ts-ignore
-  private tokenRefreshInterval: NodeJS.Timeout;
+  private readonly oauth2Client;
+  private readonly youtube: youtube_v3.Youtube;
 
   constructor() {
-    this.CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
-    this.CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
-    this.REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN!;
+    if (
+      !process.env.GOOGLE_CLIENT_ID ||
+      !process.env.GOOGLE_CLIENT_SECRET ||
+      !process.env.GOOGLE_REFRESH_TOKEN
+    ) {
+      throw new Error("Missing required environment variables");
+    }
 
-    this.oauthClient = new google.auth.OAuth2(
-      this.CLIENT_ID,
-      this.CLIENT_SECRET,
-      'http://localhost' // Add redirect URI
+    this.oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      "http://localhost"
     );
 
-    this.youtube = google.youtube({ 
-      version: "v3", 
-      auth: this.oauthClient 
+    this.oauth2Client.setCredentials({
+      refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
     });
 
-    this.initializeTokens();
-    this.startTokenRefreshInterval();
+    this.youtube = google.youtube({
+      version: "v3",
+      auth: this.oauth2Client,
+    });
   }
 
-  private startTokenRefreshInterval(): void {
-    // Refresh tokens every 5 minutes
-    this.tokenRefreshInterval = setInterval(async () => {
-      try {
-        console.log('REFRESHED TOKENS')
-        await this.refreshTokens();
-      } catch (error) {
-        console.error("Scheduled token refresh error:", error);
-      }
-    }, 5 * 60 * 1000);
-  }
-
-  private async refreshTokens(): Promise<void> {
+  private async validateTokens(): Promise<boolean> {
     try {
-      this.oauthClient.setCredentials({
-        refresh_token: this.REFRESH_TOKEN
-      });
-      
-      const { credentials } = await this.oauthClient.refreshAccessToken();
-      if (!credentials.access_token) {
-        throw new Error("No access token returned");
+      // This will attempt to get a new access token using the refresh token
+      const { token, res } = await this.oauth2Client.getAccessToken();
+
+      // If we get here, the tokens are valid
+      if (!token || !token) {
+        console.error("Failed to get valid access token");
+        return false;
       }
 
-      const tokenData: TokenData = {
-        access_token: credentials.access_token,
-        refresh_token: this.REFRESH_TOKEN,
-        expiry_date: Date.now() + (60 * 60 * 1000) 
-      };
-
-      this.saveTokens(tokenData);
-      this.oauthClient.setCredentials(tokenData);
-      console.log("Tokens refreshed successfully");
-    } catch (error) {
-      console.error("Token refresh error:", error);
-      throw error;
-    }
-  }
-
-  private initializeTokens(): void {
-    try {
-      const tokens = this.loadTokens();
-      this.oauthClient.setCredentials({
-        refresh_token: this.REFRESH_TOKEN,
-        access_token: tokens?.access_token,
-        expiry_date: tokens?.expiry_date
+      // Verify the access token works by making a simple API call
+      await this.youtube.channels.list({
+        part: ["snippet"],
+        mine: true,
       });
-      // Force immediate token refresh on initialization
-      this.refreshTokens();
-    } catch (error) {
-      console.error("Token initialization error:", error);
-    }
-  }
 
-  private loadTokens(): TokenData | null {
-    try {
-      return JSON.parse(fs.readFileSync(this.TOKEN_PATH, 'utf-8'));
-    } catch {
-      return null;
-    }
-  }
-
-  private saveTokens(tokens: TokenData): void {
-    fs.writeFileSync(this.TOKEN_PATH, JSON.stringify(tokens));
-  }
-
-  private async verifyCredentials(): Promise<boolean> {
-    try {
-      const accessToken = this.oauthClient.credentials.access_token;
-      if (!accessToken) return false;
-      await this.oauthClient.getTokenInfo(accessToken);
       return true;
-    } catch {
+    } catch (error) {
+      console.error("Token validation failed:", error);
       return false;
     }
   }
 
   public async upload(options: UploadOptions) {
+    const tokensValid = await this.validateTokens();
+    if (!tokensValid) {
+      throw new Error(
+        "Invalid or expired tokens. Please check your credentials."
+      );
+    }
+
     const tags = [
-      "FindTheEmoji", "HiddenEmoji", "EmojiChallenge",
-      "EmojiHunt", "MemeFun", "SpotTheEmoji",
-      "EmojiSearch", "Shorts", "ViralChallenge",
-      "MemeEmoji", "EmojiGame", "EmojiSpotting",
-      "HiddenObject", "MemeChallenge", "FunWithEmojis",
-      "EmojiAdventure", "GuessTheEmoji", "EmojiTrivia",
-      "EmojiFun", "ShortsChallenge"
+      "FindTheEmoji",
+      "HiddenEmoji",
+      "EmojiChallenge",
+      "EmojiHunt",
+      "MemeFun",
+      "SpotTheEmoji",
+      "EmojiSearch",
+      "Shorts",
+      "ViralChallenge",
+      "MemeEmoji",
+      "EmojiGame",
+      "EmojiSpotting",
+      "HiddenObject",
+      "MemeChallenge",
+      "FunWithEmojis",
+      "EmojiAdventure",
+      "GuessTheEmoji",
+      "EmojiTrivia",
+      "EmojiFun",
+      "ShortsChallenge",
     ];
 
-    let retries = 2;
-    while (retries > 0) {
-      try {
-        // Force token refresh before each upload attempt
-        await this.refreshTokens();
-        
-        const isValid = await this.verifyCredentials();
-        if (!isValid) {
-          throw new Error("Invalid credentials");
-        }
-
-        const request = {
-          part: ["snippet", "status"],
-          requestBody: {
-            snippet: {
-              title: options.title,
-              description: "",
-              tags: tags,
-            },
-            status: {
-              privacyStatus: "public",
-            },
+    try {
+      const request = {
+        part: ["snippet", "status"],
+        requestBody: {
+          snippet: {
+            title: options.title,
+            description: "",
+            tags: tags,
           },
-          media: {
-            body: options.videoFile,
+          status: {
+            privacyStatus: "public",
           },
-        };
+        },
+        media: {
+          body: options.videoFile,
+        },
+      };
 
-        const response = await this.youtube.videos.insert(request);
-        console.log("Upload successful");
-        return response;
-
-      } catch (error: any) {
-        console.error("Upload error:", error);
-        if (error.response) {
-          console.error("Response error data:", error.response.data);
-        }
-        
-        if (error.code === 401 && retries > 0) {
-          retries--;
-          continue;
-        }
-        throw error;
+      const response = await this.youtube.videos.insert(request);
+      console.log("Upload successful");
+      return response;
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      if (error.response) {
+        console.error("Response error data:", error.response.data);
       }
+      throw error;
     }
   }
 
-  // Cleanup method to clear the interval when the uploader is no longer needed
-  public cleanup(): void {
-    if (this.tokenRefreshInterval) {
-      clearInterval(this.tokenRefreshInterval);
+  // Static method to check if tokens are valid without creating a full instance
+  public static async checkTokens(): Promise<boolean> {
+    try {
+      const tempUploader = new YouTubeUploader();
+      return await tempUploader.validateTokens();
+    } catch (error) {
+      console.error("Token check failed:", error);
+      return false;
     }
   }
 }
 
-const uploader = new YouTubeUploader();
+// Create uploader instance only if needed
+let uploader: YouTubeUploader | null = null;
+
+export async function checkTokens(): Promise<boolean> {
+  return YouTubeUploader.checkTokens();
+}
 
 export default async function upload(options: UploadOptions) {
+  if (!uploader) {
+    uploader = new YouTubeUploader();
+  }
   return uploader.upload(options);
 }
 
-// Export cleanup function
-export function cleanup() {
-  uploader.cleanup();
+// Usage example:
+/*
+import upload, { checkTokens } from './YouTubeUploader';
+
+async function main() {
+  // First check if tokens are valid
+  const tokensValid = await checkTokens();
+  if (!tokensValid) {
+    console.error('Invalid tokens, please update your credentials');
+    return;
+  }
+
+  // Proceed with upload if tokens are valid
+  try {
+    await upload({
+      title: "My Video",
+      videoFile: fs.createReadStream("video.mp4"),
+      videoId: "someId"
+    });
+  } catch (error) {
+    console.error('Upload failed:', error);
+  }
 }
+*/
